@@ -7,7 +7,7 @@ import random
 instructions = None
 # the onboard  code for controlling the turbine that communicates with the cloud 
 
-# Callback when a message is received from the subscribed topic
+# when message is recieved write it to global variable instructions
 def on_message(client, userdata, message):
     global instructions
     message = message.payload.decode("utf-8")
@@ -18,7 +18,7 @@ def on_connect(client, userdata, flags,rc):
     print("connected with result code"+str(rc))
 
 
-
+#connect to the aws iot broker
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
@@ -35,11 +35,11 @@ client.connect("a2w8i53ab6a4ti-ats.iot.eu-west-2.amazonaws.com", 8883, 60)
 
 
 
-# Start the loop to handle incoming messages
+#loop to handle incoming messages
 client.loop_start()
 
-# Publish your data to the specified topic
-#try putting whiole loop around here ask around if does not work
+
+
 while True:
 
     data = {
@@ -48,10 +48,10 @@ while True:
     "currentAngle": random.randint(0, 359),
     "currentRev": random.randint(-359, 359)
     }
-
+    #publish data to topic
     client.publish('topic_2', json.dumps(data))
-
-    # Subscribe to the topic to receive the response
+    
+    #recieve data from lambda function
     client.subscribe('topic_4')
 
 
@@ -61,8 +61,6 @@ while True:
     print("in rest of program")
     print(instructions['currentAngle'])
 
-    #when all program logic is done set instructions to none so you can do error handling for
-    #if message does not come in
 
 
 
