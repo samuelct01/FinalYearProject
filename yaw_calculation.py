@@ -2,7 +2,7 @@ import json
 import boto3
 #this script lives on an aws lambda function added to github for documentation 
 client = boto3.client('iot-data', region_name='eu-west-2')
-
+#checks if the current angle to move will be greater than 360 and moves in the current direction if true
 def unsnap(currentRev, angleToMove):
     if ((currentRev + angleToMove) >= 360):
         angleToMove = angleToMove - 360
@@ -12,7 +12,7 @@ def unsnap(currentRev, angleToMove):
     
 
     return angleToMove
-
+#calcualtes the lowst number of degrees to move by, to achieve the targed angle 
 def shortest_angle(targetAngle,currentAngle):
     num1 = targetAngle - currentAngle
     num2 = targetAngle - currentAngle + 360
@@ -29,9 +29,9 @@ def shortest_angle(targetAngle,currentAngle):
         angleToMove = 180
 
     return angleToMove
-    
+    #high wind speed function for deciding the shorests angle to move to be perpenducular to the wind direction 
 def high_wind_speed(winddirection, currentAngle, currentRev):
-    ang1 = shortest_angle((winddirection + 90) % 360, currentAngle)
+    ang1 = shortest_angle((winddirection + 90) % 360, currentAngle)  #mod 360 to ensure the value is still within a circle
     ang2 = shortest_angle((winddirection - 90) % 360, currentAngle)
     result = 0
     if (abs(ang1) < abs(ang2)):
@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         'angleToMove' : atm,
         'currentAngle' : ca
     }
-    
+    #publish th object to topic 4 so the turbine can recieve instructions 
     response = client.publish(
         topic= 'topic_4',
         qos=1,
