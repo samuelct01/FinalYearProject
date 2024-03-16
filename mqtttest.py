@@ -5,7 +5,7 @@ import ssl
 import json
 import random
 
-
+#the code in this file was created with help from generative Ai as outlined in my report appendix  
 #script for load testing the lambda function 
 
 class MqttClient(mqtt.Client):
