@@ -4,7 +4,7 @@ import paho.mqtt.subscribe as subscribe
 import ssl
 import json
 import random
-import string
+
 
 #script for load testing the lambda function 
 
@@ -13,11 +13,7 @@ class MqttClient(mqtt.Client):
         print(f"Connected with result code {rc}")
 
     def on_message(client,userdata,message):
-        print("recieved" ,str(message.payload.decode("utf-8")))
-
-    def on_disconnect(self, client, userdata, rc):
-        print(f"Disconnected with result code {rc}")
-
+        print("recieved" + str(message.payload.decode("utf-8")))
 
 #class that defines the mqtt client and connecting to the database.
 class MqttLocust(User):
@@ -26,17 +22,18 @@ class MqttLocust(User):
         self.client = MqttClient()
         #aws credentials
         self.client.tls_set(
-            ca_certs="CA certificate",
-            certfile="Device certificate",
-            keyfile="prvate key",
+            ca_certs="",
+            certfile="",
+            keyfile="",
             cert_reqs=ssl.CERT_REQUIRED,
             tls_version=ssl.PROTOCOL_TLSv1_2
         )
-        self.client.connect("aws iot endpoint", port=8883)
+        self.client.connect("", port=8883)
 
     #publishes mqtt message to aws
     @task(1)
-    def send_mqtt_message(self):
+    def sender(self):
+        #each message is a random value for each variable for the algorithm  within
         message = {
             "direction": random.randint(0, 359),
             "speed": random.randint(5, 100),
@@ -44,15 +41,15 @@ class MqttLocust(User):
             "currentRev": random.randint(-359,359)
         }
         topic = "topic_2"
-        self.client.publish(topic, payload=json.dumps(message), qos=1)
+        self.client.publish(topic, payload=json.dumps(message))
 
     #subscribes to the relevant mqtt topic to recieve messages 
     @task(1)
-    def recieve_mqtt_message(self):
+    def reciever(self):
         topic = "topic_4"
         self.client.subscribe(topic)
         self.client.on_message = MqttClient.on_message
 
 #wait between 1-5 seconds after each task 
 class MyLocust(MqttLocust):
-    wait_time = between(1, 5)
+    wait = between(1, 5)
